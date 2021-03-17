@@ -6,15 +6,16 @@ document.addEventListener('DOMContentLoaded', () => {
     loadCriptomoneda();
     formulario.addEventListener('submit', validateForm);
 });
-const criptomonedaSelect = (criptomonedas) => new Promise(resolve => {
-    resolve(criptomonedas);
-});
-const loadCriptomoneda = () => {
+const loadCriptomoneda = async () => {
     const URL = 'https://min-api.cryptocompare.com/data/top/mktcapfull?limit=10&tsym=USD';
-    fetch(URL)
-        .then(result => result.json())
-        .then(data => criptomonedaSelect(data.Data))
-        .then(criptomonedas => addCriptomonedas(criptomonedas));
+    try {
+        const result = await fetch(URL);
+        const data = await result.json();
+        await addCriptomonedas(data.Data);
+    }
+    catch (error) {
+        console.log(error);
+    }
 };
 const addCriptomonedas = (criptomonedas) => {
     criptomonedas.map(criptomoneda => {
@@ -31,7 +32,6 @@ const validateForm = (e) => {
         printMessage('Todo los campos son obligatorios');
         return;
     }
-    ;
     consultAPI(selectMoneda.value, selectCriptomoneda.value);
 };
 const printMessage = (message) => {
@@ -45,16 +45,18 @@ const printMessage = (message) => {
             divMessage.remove();
         }, 3000);
     }
-    ;
 };
-const consultAPI = (moneda, criptomoneda) => {
+const consultAPI = async (moneda, criptomoneda) => {
     showSpinner();
     const URL = `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${criptomoneda}&tsyms=${moneda}`;
-    fetch(URL)
-        .then(result => result.json())
-        .then(data => {
+    try {
+        const result = await fetch(URL);
+        const data = await result.json();
         printCotizacion(data.DISPLAY[criptomoneda][moneda]);
-    });
+    }
+    catch (error) {
+        console.log(error);
+    }
 };
 const printCotizacion = (cotizacion) => {
     removeCotizacionHTML();
@@ -67,8 +69,7 @@ const printCotizacion = (cotizacion) => {
 };
 const createHTML = (message, value, precio) => {
     const element = document.createElement('p');
-    if (precio)
-        element.classList.add('precio');
+    if (precio) element.classList.add('precio');
     element.innerHTML = `${message}: <span> ${value} </span>`;
     resultado.appendChild(element);
 };
@@ -87,5 +88,4 @@ const removeCotizacionHTML = () => {
     while (resultado.firstChild) {
         resultado.firstChild.remove();
     }
-    ;
 };
